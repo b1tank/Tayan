@@ -5,9 +5,9 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "SweetPad: Build and Run (Wait for debugger)",
+            "name": "Tayan Debug",
             "type": "sweetpad-lldb",
-            "request": "launch",
+            "request": "attach",
             "preLaunchTask": "sweetpad: debugging-launch"
         }
     ]
