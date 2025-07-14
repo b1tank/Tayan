@@ -6,36 +6,69 @@
 //
 
 import SwiftUI
+import WebKit
 
+/// A SwiftUI view that displays HTML content using the native iOS 26+ WebKit integration
 struct WebView: View {
     let htmlContent: String
+    @State private var webPage: WebPage?
 
     var body: some View {
-        #if canImport(WebKit) && canImport(UIKit)
-            WebViewRepresentable(htmlContent: htmlContent)
-        #else
-            // Fallback for when WebKit/UIKit is not available
-            ScrollView {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Generated HTML Preview")
-                        .font(.headline)
-                        .foregroundColor(.blue)
-
-                    Text("HTML Content:")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-
-                    Text(htmlContent.strippingMarkdownWrapper())
-                        .font(.system(.caption, design: .monospaced))
-                        .padding()
-                        .background(Color.gray.opacity(0.1))
-                        .cornerRadius(8)
-                }
+        Group {
+            if let webPage = webPage {
+                WebKit.WebView(webPage)
+            } else {
+                ProgressView("Loading...")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color.gray.opacity(0.05))
-            .cornerRadius(8)
-        #endif
+        }
+        .task {
+            await setupWebPage()
+        }
+        .onChange(of: htmlContent) { _, _ in
+            Task {
+                await loadHTMLContent()
+            }
+        }
+    }
+
+    /// Sets up a new WebPage with optimized configuration for HTML rendering
+    private func setupWebPage() async {
+        // Configure WebPage for optimal HTML rendering
+        var configuration = WebPage.Configuration()
+        configuration.loadsSubresources = true
+        configuration.defaultNavigationPreferences.allowsContentJavaScript = true
+
+        let newWebPage = WebPage(configuration: configuration)
+        self.webPage = newWebPage
+
+        await loadHTMLContent()
+    }
+
+    /// Loads HTML content into the WebPage with proper error handling
+    private func loadHTMLContent() async {
+        guard let webPage = webPage else { return }
+
+        do {
+            let cleanedHTML = htmlContent.strippingMarkdownWrapper()
+
+            // Create a base URL for relative resources
+            let baseURL = URL(string: "about:blank")!
+
+            // Load the HTML content into the WebPage and wait for completion
+            for try await event in webPage.load(html: cleanedHTML, baseURL: baseURL) {
+                switch event {
+                case .finished:
+                    // Page finished loading successfully
+                    break
+                default:
+                    continue
+                }
+                break  // Exit after handling the completion event
+            }
+        } catch {
+            print("Failed to load HTML content: \(error)")
+        }
     }
 }
 
