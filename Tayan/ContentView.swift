@@ -1,212 +1,125 @@
-import FoundationModels
-import SwiftUI
-
 //
 //  ContentView.swift
 //  Tayan
 //
-//  Created by Zhichao Li on 7/10/25.
+//  Created by Zhichao Li on 7/13/25.
 //
 
+import SwiftUI
+
 struct ContentView: View {
-    @State private var session = LanguageModelSession()
-    @State private var userInput: String = ""
-    @State private var response: String = ""
-    @State private var isLoading = false
-    @State private var showError = false
-    @State private var errorMessage = ""
+    @StateObject private var viewModel = WebAppGeneratorViewModel()
 
     var body: some View {
         NavigationView {
             VStack(spacing: 20) {
                 // Header
                 VStack {
-                    Image(systemName: "brain.head.profile")
+                    Image(systemName: "globe.badge.chevron.backward")
                         .imageScale(.large)
                         .foregroundStyle(.blue)
                         .font(.system(size: 40))
-                    Text("FoundationModels Test")
+                    Text("Web App Generator")
                         .font(.title2)
                         .fontWeight(.semibold)
                 }
 
                 // Input Section
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Ask me anything:")
+                    Text("Describe your web app:")
                         .font(.headline)
 
-                    TextField("Enter your question here...", text: $userInput, axis: .vertical)
-                        .textFieldStyle(.roundedBorder)
-                        .lineLimit(3...6)
+                    TextField(
+                        "e.g., 'Create a simple HTML page with a header and a button'",
+                        text: $viewModel.userInput,
+                        axis: .vertical
+                    )
+                    .textFieldStyle(.roundedBorder)
+                    .lineLimit(3...6)
                 }
 
-                // Send Button
-                Button(action: sendMessage) {
+                // Generate Button
+                Button(action: viewModel.generateWebApp) {
                     HStack {
-                        if isLoading {
+                        if viewModel.isLoading {
                             ProgressView()
                                 .scaleEffect(0.8)
                         } else {
-                            Image(systemName: "paperplane.fill")
+                            Image(systemName: "wand.and.stars")
                         }
-                        Text(isLoading ? "Thinking..." : "Send")
+                        Text(viewModel.isLoading ? "Generating..." : "Generate Web App")
                     }
                     .frame(maxWidth: .infinity)
                     .padding()
                     .background(
-                        userInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isLoading
-                            ? Color.gray : Color.blue
+                        viewModel.canGenerate
+                            ? Color.blue : Color.gray
                     )
                     .foregroundColor(.white)
                     .cornerRadius(10)
                 }
-                .disabled(userInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isLoading)
+                .disabled(!viewModel.canGenerate)
 
-                // Response Section
-                if !response.isEmpty {
+                // Generated Content Section
+                if viewModel.hasGeneratedContent {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Response:")
-                            .font(.headline)
+                        HStack {
+                            Text("Generated Web App:")
+                                .font(.headline)
 
-                        ScrollView {
-                            Text(response)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding()
-                                .background(Color.gray.opacity(0.1))
-                                .cornerRadius(10)
+                            Spacer()
+
+                            Button("Clear") {
+                                viewModel.clearGeneration()
+                            }
+                            .foregroundColor(.blue)
                         }
-                        .frame(maxHeight: 200)
+
+                        WebView(htmlContent: viewModel.generatedHTML)
+                            .frame(maxHeight: 300)
+                            .cornerRadius(8)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                            )
                     }
                 }
 
                 Spacer()
 
                 // Model Status
-                modelStatusView
+                ModelStatusView(
+                    isAvailable: viewModel.modelAvailability.isAvailable,
+                    statusMessage: viewModel.modelAvailability.statusMessage,
+                    statusColor: viewModel.modelAvailability.statusColor,
+                    onRefresh: viewModel.refreshModelStatus
+                )
             }
             .padding()
-            .navigationTitle("AI Chat")
+            .navigationTitle("Tayan")
             .navigationBarTitleDisplayMode(.inline)
-            .alert("Error", isPresented: $showError) {
-                Button("OK") {}
+            .alert(
+                viewModel.currentError?.title ?? "Error",
+                isPresented: $viewModel.showError
+            ) {
+                Button("OK") {
+                    viewModel.showError = false
+                }
             } message: {
-                Text(errorMessage)
-            }
-        }
-    }
-
-    @ViewBuilder
-    private var modelStatusView: some View {
-        HStack {
-            Image(systemName: "circle.fill")
-                .foregroundColor(modelStatusColor)
-                .font(.caption)
-            Text(modelStatusText)
-                .font(.caption)
-                .foregroundColor(.secondary)
-        }
-    }
-
-    private var modelStatusColor: Color {
-        switch SystemLanguageModel.default.availability {
-        case .available:
-            return .green
-        case .unavailable:
-            return .red
-        }
-    }
-
-    private var modelStatusText: String {
-        switch SystemLanguageModel.default.availability {
-        case .available:
-            return "Model Available"
-        case .unavailable(let reason):
-            return "Model Unavailable: \(reason)"
-        }
-    }
-
-    private func sendMessage() {
-        guard !userInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
-
-        isLoading = true
-
-        Task {
-            do {
-                let result = try await session.respond(to: userInput)
-
-                await MainActor.run {
-                    response = result.content
-                    userInput = ""
-                    isLoading = false
-                }
-            } catch let error {
-                await MainActor.run {
-                    handleGeneratedError(error as! LanguageModelSession.GenerationError)
+                if let error = viewModel.currentError {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(error.message)
+                        if let suggestion = error.recoverySuggestion {
+                            Text(suggestion)
+                                .font(.caption)
+                        }
+                    }
                 }
             }
         }
-    }
-
-    private func handleGeneratedError(_ error: LanguageModelSession.GenerationError) {
-        isLoading = false
-
-        switch error {
-        case .exceededContextWindowSize(let context):
-            // Create new session with condensed history if possible
-            session = newSession(previousSession: session)
-            presentGeneratedError(error, context: context)
-
-        case .assetsUnavailable(let context):
-            presentGeneratedError(error, context: context)
-
-        case .guardrailViolation(let context):
-            presentGeneratedError(error, context: context)
-
-        case .unsupportedGuide(let context):
-            presentGeneratedError(error, context: context)
-
-        case .unsupportedLanguageOrLocale(let context):
-            presentGeneratedError(error, context: context)
-
-        case .decodingFailure(let context):
-            presentGeneratedError(error, context: context)
-
-        case .rateLimited(let context):
-            presentGeneratedError(error, context: context)
-
-        default:
-            errorMessage = "Failed to respond: \(error.localizedDescription)"
-            showError = true
-        }
-    }
-
-    private func presentGeneratedError(
-        _ error: LanguageModelSession.GenerationError,
-        context: LanguageModelSession.GenerationError.Context
-    ) {
-        var message = "Failed to respond: \(error.errorDescription)"
-
-        if let failureReason = error.failureReason {
-            message += "\nReason: \(failureReason)"
-        }
-
-        if let recoverySuggestion = error.recoverySuggestion {
-            message += "\nSuggestion: \(recoverySuggestion)"
-        }
-
-        errorMessage = message
-        showError = true
-
-        // Log detailed context for debugging
-        print("Generation error context: \(context)")
-    }
-
-    private func newSession(previousSession: LanguageModelSession) -> LanguageModelSession {
-        // For context window exceeded errors, create a new session without history
-        // This is the recommended approach from the Apple documentation
-        return LanguageModelSession()
     }
 }
+
 #Preview {
     ContentView()
 }

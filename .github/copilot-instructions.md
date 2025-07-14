@@ -27,6 +27,7 @@ The project follows a classic iOS MVVM architecture with clear separation:
 - SwiftUI views should include `#Preview` blocks for development
 - Create simple scripts in `/Playgrounds/` for testing new features or APIs
 - Ignore warnings like `module unavailable` or `type unavailable` since they are available in the latest iOS SDK configured in the project
+  - e.g. `FoundationModels` is available in iOS 26.0+ but may show as unavailable in earlier SDKs
 
 ## Latest API References
 

@@ -1,48 +1,56 @@
-# Tayan
+# Tayan - AI Web App Generator
 
-Tayan is an open-source iOS app for simple, fast and privacy-focused note-taking.
+Create simple web applications using natural language descriptions. Powered by Apple's FoundationModels AI, Tayan transforms your ideas into functional web apps instantly.
 
-# Requirements
+Tayan is an iOS app that democratizes web development by letting you create web applications through simple English descriptions. No coding knowledge required - just describe what you want, and watch AI build it for you.
 
-- iOS 26.0+
-- Xcode 26.0+
+**Example**: Type "Create a simple HTML page with a header and a button" → Get a fully functional HTML page with styling.
 
-# Getting Started
+## 🚀 Key Features
 
-1. Clone the repository:
+- **🤖 AI-Powered**: Leverages Apple's cutting-edge FoundationModels
+- **🗣️ Natural Language**: Describe apps in plain English
+
+## 🎯 What You Can Build
+
+### Web App Types
+- **🧮 Utility Apps**: Calculators, converters, timers, unit converters
+- **🕹️ Simple Games**: Tic-tac-toe, rock-paper-scissors, number guessing
+
+### Try These Prompts
+```
+"Make a tip calculator with bill amount and tip percentage"
+"Create a simple HTML game with a button to start"
+```
+
+## 🔑 Requirements
+
+- iOS 26.0 or later
+- Xcode 26.0 or later
+- Apple's FoundationModels framework
+
+## 🚀 Quick Start
+
+1. **Clone the repository**
    ```bash
    git clone https://github.com/b1tank/Tayan.git
    cd Tayan
    ```
-2. Open the project in Xcode:
+
+2. **Open in Xcode**
    ```bash
    open Tayan.xcodeproj
    ```
-3. Select the target device or simulator.
-4. Build and run the app:
-   - Press `Cmd + R` to build and run the app on the selected device or simulator.
-   - Alternatively, you can use the `Product > Run` menu option in Xcode.
-   - If you encounter any issues, ensure that your Xcode and iOS versions are compatible with the project requirements.
-   - If you need to run the app on a physical device, make sure to set up your Apple Developer account and provisioning profiles in Xcode.
 
-# Contributing
+3. **Build and Run**
+   - Select your target device/simulator
+   - Press `Cmd + R` to build and run
+   - Ensure you have iOS 26.0+ for FoundationModels support
 
-## Use VSCode
+## 🤝 Contributing
 
-You can use extensions to set up a development environment in Visual Studio Code (VSCode) for Tayan. This allows you to write, debug, and run Swift code without needing to use Xcode.
-- [Swift for VSCode](https://marketplace.visualstudio.com/items?itemName=sswg.swift-lang)
-- [Sweetpad VSCode Extension](https://sweetpad.hyzyla.dev/docs/intro)
-  - [Autocomplete](https://sweetpad.hyzyla.dev/docs/autocomplete)
-  - [Build and Run](https://sweetpad.hyzyla.dev/docs/build)
-  - [Debug](https://sweetpad.hyzyla.dev/docs/debug)
-  - [Format](https://sweetpad.hyzyla.dev/docs/format)
-  - [Other tools](https://sweetpad.hyzyla.dev/docs/tools)
+We welcome contributions! Whether you're fixing bugs, adding features, or improving documentation, your help makes Tayan better for everyone.
 
-## Use Xcode
+## 📄 License
 
-You can also take advantage of Xcode's powerful features for iOS development, such as:
-- preview and edit SwiftUI views in real-time.
-- other native iOS development features.
-
-# License
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
