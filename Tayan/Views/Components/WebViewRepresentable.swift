@@ -18,7 +18,6 @@ import SwiftUI
 
         func makeUIView(context: Context) -> WKWebView {
             let configuration = WKWebViewConfiguration()
-            configuration.preferences.javaScriptEnabled = true
 
             let webView = WKWebView(frame: .zero, configuration: configuration)
             webView.navigationDelegate = context.coordinator
