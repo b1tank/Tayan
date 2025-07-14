@@ -25,7 +25,8 @@ import SwiftUI
         }
 
         func updateUIView(_ webView: WKWebView, context: Context) {
-            webView.loadHTMLString(htmlContent, baseURL: nil)
+            let cleanedHTML = htmlContent.strippingMarkdownWrapper()
+            webView.loadHTMLString(cleanedHTML, baseURL: nil)
         }
 
         func makeCoordinator() -> Coordinator {

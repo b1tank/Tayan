@@ -25,7 +25,7 @@ struct WebView: View {
                         .font(.subheadline)
                         .foregroundColor(.secondary)
 
-                    Text(htmlContent)
+                    Text(htmlContent.strippingMarkdownWrapper())
                         .font(.system(.caption, design: .monospaced))
                         .padding()
                         .background(Color.gray.opacity(0.1))

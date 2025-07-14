@@ -22,6 +22,7 @@ The project follows a classic iOS MVVM architecture with clear separation:
 - First look up the latest API references below to check if needed for the task
 - Respect the established folder structure and feel free to add new folders as needed
 - Follow industry best practices for separation of concerns and object-oriented design
+- Don't duplicate code in different places; instead, create reusable components, functions, structs, or classes
 - Follow SwiftUI best practices with declarative UI patterns
 - Place reusable UI components in `Views/Components/`
 - SwiftUI views should include `#Preview` blocks for development
